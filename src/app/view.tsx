@@ -73,7 +73,7 @@ export default function HomeView() {
                 </Button>
                 <Button variant="outline" asChild>
                   <a
-                    href="https://github.com"
+                    href="https://github.com/designly1/next-auth-example2"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
