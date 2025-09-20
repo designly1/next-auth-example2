@@ -15,8 +15,7 @@ import {
   User,
   Users,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from "nextjs13-progress";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,27 +25,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { logout } from "@/lib/auth/jwt";
-import type { I_UserPublic } from "@/types/user";
+import { useAuth } from "@/contexts/auth-provider";
 
-interface DashboardViewProps {
-  user: I_UserPublic;
-}
-
-export default function DashboardView({ user }: DashboardViewProps) {
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+export default function DashboardView() {
   const router = useRouter();
+  const { user } = useAuth();
 
   const handleLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await logout();
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      setIsLoggingOut(false);
-    }
+    router.push("/logout");
   };
 
   const stats = [
@@ -112,6 +98,12 @@ export default function DashboardView({ user }: DashboardViewProps) {
     },
   ];
 
+  /**
+   * User data loads so fast, that it's not
+   * noticable. So we return null until the user data is loaded.
+   */
+  if (!user) return null;
+
   return (
     <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* Header */}
@@ -138,17 +130,12 @@ export default function DashboardView({ user }: DashboardViewProps) {
                 <div className="flex items-center space-x-2">
                   <User className="w-6 h-6 text-gray-500" />
                   <span className="font-medium text-gray-700 dark:text-gray-300 text-sm">
-                    {user.name}
+                    {user.name || "Loading..."}
                   </span>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                >
+                <Button variant="outline" size="sm" onClick={handleLogout}>
                   <LogOut className="mr-2 w-4 h-4" />
-                  {isLoggingOut ? "Logging out..." : "Logout"}
+                  Logout
                 </Button>
               </div>
             </div>
@@ -161,7 +148,7 @@ export default function DashboardView({ user }: DashboardViewProps) {
         {/* Welcome Message */}
         <div className="mb-8">
           <h2 className="font-bold text-gray-900 dark:text-white text-2xl">
-            Welcome back, {user.name}!
+            Welcome back, {user.name || "Loading..."}!
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
             Here's what's happening with your application today.

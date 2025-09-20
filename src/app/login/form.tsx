@@ -7,7 +7,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { z } from "zod";
-import type { I_ApiLoginResponse } from "@/app/api/v1/auth/login/route";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -18,6 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { login } from "@/lib/actions/auth/login";
 
 const loginSchema = z.object({
   email: z
@@ -54,18 +54,10 @@ export default function LoginForm() {
     const loadingToast = toast.loading("Signing in...");
 
     try {
-      const response = await fetch("/api/v1/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
+      const result = await login({
+        email: data.email,
+        password: data.password,
       });
-
-      const result: I_ApiLoginResponse = await response.json();
 
       if (result.success) {
         toast.update(loadingToast, {

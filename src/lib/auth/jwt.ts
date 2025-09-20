@@ -95,6 +95,7 @@ export async function verifyJwtTokenWithJti(
       `${authConfig.jwt.kvJtiPrefix}${payload.jti}`,
     );
     if (!jtiExists) {
+      const cookieStore = await cookies();
       cookieStore.delete(authConfig.jwt.cookieParams.name);
       cookieStore.delete(authConfig.jwt.userDataCookieParams.name);
       return null;
@@ -128,6 +129,7 @@ export async function getJwtWithJti(): Promise<I_AuthPayload | null> {
 
 export async function revokeJwt(jti: string) {
   await kv.del(`${authConfig.jwt.kvJtiPrefix}${jti}`);
+  const cookieStore = await cookies();
   cookieStore.delete(authConfig.jwt.cookieParams.name);
   cookieStore.delete(authConfig.jwt.userDataCookieParams.name);
 }
@@ -162,8 +164,13 @@ export async function setUserDataCookie(userData: I_UserPublic) {
 export async function getUserDataCookie(): Promise<I_UserPublic | null> {
   const cookieStore = await cookies();
   const userData = cookieStore.get(authConfig.jwt.userDataCookieParams.name);
-  if (!userData) return null;
-  return JSON.parse(userData.value) as I_UserPublic;
+  if (!userData || !userData.value) return null;
+
+  try {
+    return JSON.parse(userData.value) as I_UserPublic;
+  } catch {
+    return null;
+  }
 }
 
 export async function getValidatedUserData(): Promise<I_UserPublic | null> {

@@ -14,7 +14,7 @@ const authConfig = {
       name: JWT_TOKEN_COOKIE_NAME,
       httpOnly: true,
       sameSite: "strict" as const, //! this must be a const
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       maxAge: JWT_EXPIRY,
       path: "/",
     },
@@ -23,7 +23,7 @@ const authConfig = {
       name: USER_DATA_COOKIE_NAME,
       httpOnly: false,
       sameSite: "strict" as const, //! this must be a const
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       maxAge: JWT_EXPIRY,
       path: "/",
     },

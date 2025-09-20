@@ -1,5 +1,5 @@
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+"use server";
+
 import { exportPublicUser, getUserByEmail } from "@/data/users";
 import { createUserSession } from "@/lib/auth/jwt";
 import { verifyPassword } from "@/lib/auth/password";
@@ -7,7 +7,7 @@ import { logServerError } from "@/lib/loggin/log-server-error";
 
 import type { I_UserPublic } from "@/types/user";
 
-export type I_ApiLoginResponse =
+export type ReturnType =
   | {
       success: true;
       user: I_UserPublic;
@@ -22,51 +22,52 @@ interface I_LoginPayload {
   password: string;
 }
 
+/**
+ * Error messages available to the client
+ */
 const errorMessages = {
   USER_NOT_FOUND: "User not found",
   INVALID_PASSWORD: "Invalid password",
-  INVALID_REQUEST: "Invalid request body",
   DEFAULT: "An unknown error occurred",
 };
 
-export async function POST(
-  request: NextRequest,
-): Promise<NextResponse<I_ApiLoginResponse>> {
+export async function login(payload: I_LoginPayload): Promise<ReturnType> {
   try {
-    const body = await request.json();
+    const { email, password } = payload;
 
-    if (!body || typeof body !== "object" || !body.email || !body.password) {
-      return NextResponse.json(
-        { success: false, error: errorMessages.INVALID_REQUEST },
-        { status: 400 },
-      );
-    }
-
-    const { email, password }: I_LoginPayload = body;
-
+    /**
+     * Get the user by email from fake database
+     */
     const user = await getUserByEmail(email);
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: errorMessages.USER_NOT_FOUND },
-        { status: 401 },
-      );
+      return { success: false, error: errorMessages.USER_NOT_FOUND };
     }
 
+    /**
+     * Verify the password using argon2
+     */
     const isPasswordValid = await verifyPassword(password, user.password);
     if (!isPasswordValid) {
-      return NextResponse.json(
-        { success: false, error: errorMessages.INVALID_PASSWORD },
-        { status: 401 },
-      );
+      return { success: false, error: errorMessages.INVALID_PASSWORD };
     }
 
+    /**
+     * This creates both the JWT and the user data cookie
+     * the user data cookie is used to store the user data in the
+     * auth context so it's always available to the child components
+     */
     const userDataPublic = exportPublicUser(user);
     await createUserSession(userDataPublic);
 
-    return NextResponse.json({ success: true, user: userDataPublic });
+    return { success: true, user: userDataPublic };
   } catch (err: unknown) {
     logServerError(err);
 
+    /**
+     * Only return the error message if it's one of the known error messages
+     * otherwise return the default error message. This prevents leaking information
+     * to the client.
+     */
     const errorMessage =
       err instanceof Error
         ? Object.values(errorMessages).includes(err.message)
@@ -74,9 +75,6 @@ export async function POST(
           : errorMessages.DEFAULT
         : errorMessages.DEFAULT;
 
-    return NextResponse.json(
-      { success: false, error: errorMessage },
-      { status: 500 },
-    );
+    return { success: false, error: errorMessage };
   }
 }
