@@ -7,20 +7,40 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "fix": "biome check --fix",
+    "generate-jwt-secret": "tsx src/scripts/generate-jwt-secret.ts",
+    "generate-password-hash": "tsx src/scripts/generate-password-hash.ts"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@node-rs/argon2": "^2.0.2",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "ioredis": "^5.7.0",
+    "jose": "^6.1.0",
+    "lucide-react": "^0.544.0",
+    "nanoid": "^5.1.5",
+    "next": "15.6.0-canary.19",
+    "nextjs13-progress": "^1.3.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.6.0-canary.19"
+    "react-hook-form": "^7.63.0",
+    "react-toastify": "^11.0.5",
+    "tailwind-merge": "^3.3.1",
+    "tsx": "^4.20.5",
+    "zod": "^4.1.9"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@biomejs/biome": "2.2.0",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
     "tailwindcss": "^4",
-    "@biomejs/biome": "2.2.0"
+    "tw-animate-css": "^1.3.8",
+    "typescript": "^5"
   }
 }
